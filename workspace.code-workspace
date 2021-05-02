@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "../image-vectorization-with-autoencoders"
+		},
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"git.ignoreLimitWarning": true
+	}
+}
