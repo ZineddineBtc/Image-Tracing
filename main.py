@@ -2,6 +2,8 @@ import keras
 from keras import layers
 from keras.datasets import mnist
 from keras.callbacks import TensorBoard
+from keras.preprocessing.image import ImageDataGenerator
+import os
 import numpy as np
 from matplotlib import pyplot as plt
 
@@ -53,22 +55,30 @@ def load_autoencoder(epoch):
     print("model loaded from disk")
     return autoencoder
 
+def convertImagestoVector():
+    #---------------------------------Image Conversion------------------------------------------
+    for i in range(imageCount):
+        #autoencoder
+        os.system("convert " + acOutputDir + "Pic_"+'{0:03d}'.format(i)+ ".png " + tempDir + "autoenc.ppm")
+        os.system("potrace " + tempDir + "autoenc.ppm --output " + vecAcDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg -s")
+        
+
 def main():
     train = False
     predict = True
-    epoch = 2  # to be modified for actual results
-    autoencoder = define_autoencoder()
+    epoch = 1  # to be modified for actual results
     x_train, x_test = get_data()
     if train:
+        autoencoder = define_autoencoder()
         history = autoencoder.fit(x_train, x_train,
                                     epochs=epoch,
                                     batch_size=128,
                                     shuffle=True,
                                     validation_data=(x_test, x_test),
-                                    callbacks=[TensorBoard(log_dir='/tmp/autoencoder')])
+                                    callbacks=[TensorBoard(log_dir="/tmp/autoencoder")])
         save_autoencoder(autoencoder, epoch)
         print("plotting loss")
-        plt.plot(history.history['loss'])
+        plt.plot(history.history["loss"])
         plt.title("Model loss")
         plt.ylabel("Loss")
         plt.xlabel("Epoch")
@@ -80,7 +90,25 @@ def main():
         autoencoder.compile(optimizer="adam", loss="mse")
         evaluation = autoencoder.evaluate(x_test, x_test)
     if predict:
-        prediction = autoencoder.predict(x_test, verbose=1)
-        
+        decoded_imgs = autoencoder.predict(x_test)
+        n = 10
+        plt.figure(figsize=(20, 4))
+        for i in range(1, n + 1):
+            # Display original
+            ax = plt.subplot(2, n, i)
+            plt.imshow(x_test[i].reshape(28, 28))
+            plt.gray()
+            ax.get_xaxis().set_visible(False)
+            ax.get_yaxis().set_visible(False)
+
+            # Display reconstruction
+            ax = plt.subplot(2, n, i + n)
+            plt.imshow(decoded_imgs[i].reshape(28, 28))
+            plt.gray()
+            ax.get_xaxis().set_visible(False)
+            ax.get_yaxis().set_visible(False)
+        plt.show()
+        plt.savefig("results/result.png")
+
 if __name__ == "__main__":
     main()
