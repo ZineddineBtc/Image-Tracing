@@ -65,19 +65,19 @@ def write_decoded_images(decoded_images, image_count):
         ax.imshow(decoded_images[i], cmap=plt.cm.bone, interpolation='nearest', aspect='auto')  # decoded_images[i] to be reshaped to (256, 256) ?
         fig.savefig("decoded/image_"+'{0:03d}'.format(i))
 
+def portrace_png_to_svg(image_count):
+    for i in range(image_count):
+        os.system("convert decoded/image_" + '{0:03d}'.format(i) + ".png temp/autoenc.ppm")
+        os.system("potrace temp/autoenc.ppm --output decoded_to_svg/potrace_image_" + '{0:03d}'.format(i) + ".svg -s")
+
 def main():
     train = False
-    predict = False
+    predict = True
     epoch = 1  # to be modified for actual results
     x_train, x_test = get_data()
     if train:
         autoencoder = define_autoencoder()
-        history = autoencoder.fit(x_train, x_train,
-                                    epochs=epoch,
-                                    batch_size=128,
-                                    shuffle=True,
-                                    validation_data=(x_test, x_test),
-                                    callbacks=[TensorBoard(log_dir="/tmp/autoencoder")])
+        history = autoencoder.fit(x_train, x_train, epochs=epoch, batch_size=128, shuffle=True, validation_data=(x_test, x_test), callbacks=[TensorBoard(log_dir="/tmp/autoencoder")])
         save_autoencoder(autoencoder, epoch)
         print("plotting loss")
         plt.plot(history.history["loss"])
@@ -94,7 +94,8 @@ def main():
     if predict:
         decoded_images = autoencoder.predict(x_test)
         image_count = 10
-        write_decoded_images(decoded_images, 10)
+        write_decoded_images(decoded_images, image_count)
+        portrace_png_to_svg(image_count)
 
 if __name__ == "__main__":
     main()
