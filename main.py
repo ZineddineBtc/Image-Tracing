@@ -56,9 +56,7 @@ def load_autoencoder(epoch):
     return autoencoder
 
 def convertImagestoVector():
-    #---------------------------------Image Conversion------------------------------------------
     for i in range(imageCount):
-        #autoencoder
         os.system("convert " + acOutputDir + "Pic_"+'{0:03d}'.format(i)+ ".png " + tempDir + "autoenc.ppm")
         os.system("potrace " + tempDir + "autoenc.ppm --output " + vecAcDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg -s")
         
@@ -90,25 +88,16 @@ def main():
         autoencoder.compile(optimizer="adam", loss="mse")
         evaluation = autoencoder.evaluate(x_test, x_test)
     if predict:
-        decoded_imgs = autoencoder.predict(x_test)
+        prediction = autoencoder.predict(x_test)
         n = 10
-        plt.figure(figsize=(20, 4))
-        for i in range(1, n + 1):
-            # Display original
-            ax = plt.subplot(2, n, i)
-            plt.imshow(x_test[i].reshape(28, 28))
-            plt.gray()
-            ax.get_xaxis().set_visible(False)
-            ax.get_yaxis().set_visible(False)
-
-            # Display reconstruction
-            ax = plt.subplot(2, n, i + n)
-            plt.imshow(decoded_imgs[i].reshape(28, 28))
-            plt.gray()
-            ax.get_xaxis().set_visible(False)
-            ax.get_yaxis().set_visible(False)
-        plt.show()
-        plt.savefig("results/result.png")
+        for i in range(n):
+            fig = plt.figure(frameon=False) # Figure without frame
+            ax = plt.Axes(fig, [0., 0., 1., 1.]) # make the image fill out the entire figure
+            ax.set_axis_off()
+            fig.add_axes(ax)
+            x = prediction[i]
+            ax.imshow(x, cmap=plt.cm.bone, interpolation='nearest', aspect='auto')
+            fig.savefig("decoded/image_"+'{0:03d}'.format(i))
 
 if __name__ == "__main__":
     main()
