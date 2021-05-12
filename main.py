@@ -55,15 +55,19 @@ def load_autoencoder(epoch):
     print("model loaded from disk")
     return autoencoder
 
-def convertImagestoVector():
-    for i in range(imageCount):
-        os.system("convert " + acOutputDir + "Pic_"+'{0:03d}'.format(i)+ ".png " + tempDir + "autoenc.ppm")
-        os.system("potrace " + tempDir + "autoenc.ppm --output " + vecAcDir + "potrace_Pic_"+'{0:03d}'.format(i) + ".svg -s")
-        
+def write_decoded_images(decoded_images, image_count):
+    image_count = 10
+    for i in range(image_count):
+        fig = plt.figure(frameon=False)  # figure without frame
+        ax = plt.Axes(fig, [0., 0., 1., 1.])  # make the image fill out the entire figure
+        ax.set_axis_off()
+        fig.add_axes(ax)
+        ax.imshow(decoded_images[i], cmap=plt.cm.bone, interpolation='nearest', aspect='auto')  # decoded_images[i] to be reshaped to (256, 256) ?
+        fig.savefig("decoded/image_"+'{0:03d}'.format(i))
 
 def main():
     train = False
-    predict = True
+    predict = False
     epoch = 1  # to be modified for actual results
     x_train, x_test = get_data()
     if train:
@@ -88,16 +92,9 @@ def main():
         autoencoder.compile(optimizer="adam", loss="mse")
         evaluation = autoencoder.evaluate(x_test, x_test)
     if predict:
-        prediction = autoencoder.predict(x_test)
-        n = 10
-        for i in range(n):
-            fig = plt.figure(frameon=False) # Figure without frame
-            ax = plt.Axes(fig, [0., 0., 1., 1.]) # make the image fill out the entire figure
-            ax.set_axis_off()
-            fig.add_axes(ax)
-            x = prediction[i]
-            ax.imshow(x, cmap=plt.cm.bone, interpolation='nearest', aspect='auto')
-            fig.savefig("decoded/image_"+'{0:03d}'.format(i))
+        decoded_images = autoencoder.predict(x_test)
+        image_count = 10
+        write_decoded_images(decoded_images, 10)
 
 if __name__ == "__main__":
     main()
