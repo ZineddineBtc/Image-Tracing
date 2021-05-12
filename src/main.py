@@ -70,6 +70,15 @@ def portrace_png_to_svg(image_count):
         os.system("convert decoded/image_" + '{0:03d}'.format(i) + ".png temp/autoenc.ppm")
         os.system("potrace temp/autoenc.ppm --output decoded_to_svg/potrace_image_" + '{0:03d}'.format(i) + ".svg -s")
 
+def plot_history(history):
+    print("plotting loss")
+    plt.plot(history.history["loss"])
+    plt.title("Model loss")
+    plt.ylabel("Loss")
+    plt.xlabel("Epoch")
+    plt.legend(["Train", "Test"], loc="upper left")
+    plt.show()
+
 def main():
     train = False
     predict = True
@@ -79,18 +88,12 @@ def main():
         autoencoder = define_autoencoder()
         history = autoencoder.fit(x_train, x_train, epochs=epoch, batch_size=128, shuffle=True, validation_data=(x_test, x_test), callbacks=[TensorBoard(log_dir="/tmp/autoencoder")])
         save_autoencoder(autoencoder, epoch)
-        print("plotting loss")
-        plt.plot(history.history["loss"])
-        plt.title("Model loss")
-        plt.ylabel("Loss")
-        plt.xlabel("Epoch")
-        plt.legend(["Train", "Test"], loc="upper left")
-        plt.show()
-    else: # already trained
+        plot_history(history)
+    else:  # already trained
         autoencoder = load_autoencoder(epoch)
         print("checking loaded Model...")
         autoencoder.compile(optimizer="adam", loss="mse")
-        evaluation = autoencoder.evaluate(x_test, x_test)
+        evaluation = autoencoder.evaluate(x_test, x_test)  # to be used
     if predict:
         decoded_images = autoencoder.predict(x_test)
         image_count = 10
